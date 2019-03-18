@@ -14,3 +14,7 @@ Very basic server using Apache Spark to count vowels
 - From a terminal:
 
 > nc localhost 9070
+
+- From a web browser:
+
+> http://localhost:4040/jobs/
