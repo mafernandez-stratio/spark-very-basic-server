@@ -10,12 +10,15 @@ import scala.util.Try
 
 object VowelsCounter extends App {
 
-  assert(args.length > 0, "Usage: VowelsCounter <Port>")
+  assert(args.length > 0, "Usage: VowelsCounter <Port> [<Master>]")
 
   val sparkConf = new SparkConf().setAppName("Utad Vowels counter")//.setMaster("local[*]")
-  val sc = new SparkContext(sparkConf)
+  val sparkConfWithMaster = Try(args(1)).map{ m =>
+    sparkConf.setMaster(m).setJars(Seq("target/very-basic-server-0.1-SNAPSHOT-jar-with-dependencies.jar"))
+  }.getOrElse(sparkConf)
+  val sc = new SparkContext(sparkConfWithMaster)
 
-  val server = new ServerSocket(args.head.toInt)
+  val server = new ServerSocket(args(0).toInt)
 
   while(true){
 
@@ -27,7 +30,7 @@ object VowelsCounter extends App {
     Try{
       in.foreach { l =>
 
-        val resultRDD = sc.parallelize(l.split(" ")).
+        val resultRDD = sc.parallelize(l.split(" ").toSeq).
           flatMap(word => word.toLowerCase.toCharArray).
           filter(Set('a', 'e', 'i', 'o', 'u').contains).
           map((_, 1)).
