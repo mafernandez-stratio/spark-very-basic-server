@@ -9,10 +9,10 @@ import org.apache.spark.streaming.twitter.TwitterUtils
 
 object TwitterSentimentAnalysis extends App with Logging {
 
-  val consumerKey = "ATqx5VZzXUszXXRnLphHBng33"
-  val consumerSecret = "NfrxW56H5radSSBO4wy0P24XDvkypO4vMihXIkN1tVx5Xo3Fb0"
-  val accessToken = "29101445-L15aZeWpGe04iKp8x29mj9YNidOh9F6SAfEU7qvOJ"
-  val accessTokenSecret = "BFH3sNuOtqysPf2xpMKL3DBqnr3MMmK3XPflhC21077i4"
+  val consumerKey = "***"
+  val consumerSecret = "***"
+  val accessToken = "***"
+  val accessTokenSecret = "***"
 
   val filters: Array[String] = Array.empty[String]
 
