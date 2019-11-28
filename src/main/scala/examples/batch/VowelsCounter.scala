@@ -1,4 +1,4 @@
-package utad
+package examples.batch
 
 import java.io.PrintStream
 import java.net.ServerSocket
@@ -12,7 +12,7 @@ object VowelsCounter extends App {
 
   assert(args.length > 0, "Usage: VowelsCounter <Port> [<Master>]")
 
-  val sparkConf = new SparkConf().setAppName("Utad Vowels counter")//.setMaster("local[*]")
+  val sparkConf = new SparkConf().setAppName("Examples Vowels counter")//.setMaster("local[*]")
   val sparkConfWithMaster = Try(args(1)).map{ m =>
     sparkConf.setMaster(m).setJars(Seq("target/very-basic-server-0.1-SNAPSHOT-jar-with-dependencies.jar"))
   }.getOrElse(sparkConf)
