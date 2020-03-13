@@ -67,6 +67,9 @@ object TwitterSentimentAnalysis extends App {
   rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
 
   val relevantTweets = tweets.filter{ tweet =>
+    rootLogger.error(s"tweet: $tweet")
+    rootLogger.error(s"Hashtags: ${tweet._2}")
+    rootLogger.error(s"Hashtags tweets: ${tweet._2.mkString(",")}")
     tweet._2.intersect(keywords).length > 0
   }.map(row => (row._1, row._2.mkString(" "), row._3))
 
