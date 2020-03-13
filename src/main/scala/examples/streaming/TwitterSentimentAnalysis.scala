@@ -22,9 +22,7 @@ object TwitterSentimentAnalysis extends App {
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val twitterFile = Try(args(0)).getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
-  rootLogger.error(s"twitterFile=$twitterFile")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
-  rootLogger.error(s"pgURL=$pgURL")
 
   val filters: Array[String] = Array("covid19")
 
@@ -49,7 +47,9 @@ object TwitterSentimentAnalysis extends App {
   fs.delete(new Path("/tmp/streaming/"), true)
 
   rootLogger.error(" >>> Starting Streaming context")
-  val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(60))
+  rootLogger.error(s"twitterFile=$twitterFile")
+  rootLogger.error(s"pgURL=$pgURL")
+  val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(20))
   val stream = TwitterUtils.createStream(ssc, None, filters)
 
   rootLogger.error(" >>> New data window")
