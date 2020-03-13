@@ -36,8 +36,8 @@ object TwitterSentimentAnalysis extends App {
   System.setProperty("twitter4j.oauth.accessToken", twitterCredentials.getProperty("twitter-source.token"))
   System.setProperty("twitter4j.oauth.accessTokenSecret", twitterCredentials.getProperty("twitter-source.tokenSecret"))
 
-  //val sparkConf = new SparkConf().setMaster("local[*]").setAppName("TwitterSentimentAnalysis")
-  val sparkConf = new SparkConf().setAppName("TwitterSentimentAnalysis")
+  val sparkConf = new SparkConf().setMaster("local[*]").setAppName("TwitterSentimentAnalysis")
+  //val sparkConf = new SparkConf().setAppName("TwitterSentimentAnalysis")
 
   val sparkSession = SparkSession.builder().config(sparkConf).getOrCreate()
 
