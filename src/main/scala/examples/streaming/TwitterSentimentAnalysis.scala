@@ -23,6 +23,7 @@ object TwitterSentimentAnalysis extends App {
 
   val twitterFile = Try(args(0)).getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
+  val windowSecs: Int = Try(args(2).toInt).getOrElse(30)
 
   val filters: Array[String] = Array.empty[String]
   val twitterCredentials = new Properties()
@@ -48,7 +49,7 @@ object TwitterSentimentAnalysis extends App {
   rootLogger.error(" >>> Starting Streaming context")
   rootLogger.error(s"twitterFile=$twitterFile")
   rootLogger.error(s"pgURL=$pgURL")
-  val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(10))
+  val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(windowSecs))
   val stream = TwitterUtils.createStream(ssc, None, filters)
 
   rootLogger.error(" >>> New data window")
@@ -73,11 +74,11 @@ object TwitterSentimentAnalysis extends App {
     rootLogger.error(s" >>> Saving ${rdd.count()} tweets from iphone sources")
     rdd.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/iphone")
 
-    val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/iphone")
+    /*val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/iphone")
     rootLogger.error(s" >>> Total tweets from iphone sources: ${df.count()}")
     rootLogger.error(s" >>> Tweets from iphones:${System.lineSeparator}${df.collect().map{ row =>
       s"${row.getString(0)} | ${row.getString(1)} | ${row.getString(2)}"
-    }.mkString(System.lineSeparator())}")
+    }.mkString(System.lineSeparator())}")*/
   }
 
   val otherSourcesTweets = relevantTweets.filter(!_._1.toLowerCase.contains("iphone"))
@@ -86,11 +87,11 @@ object TwitterSentimentAnalysis extends App {
     rootLogger.error(s" >>> Saving ${rdd.count()} tweets from other sources")
     rdd.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/other")
 
-    val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/other")
+    /*val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/other")
     rootLogger.error(s" >>> Total tweets from other sources: ${df.count()}")
     rootLogger.error(s" >>> Tweets from others:${System.lineSeparator}${df.collect().map{ row =>
       s"${row.getString(0)} | ${row.getString(1)} | ${row.getString(2)}"
-    }.mkString(System.lineSeparator())}")
+    }.mkString(System.lineSeparator())}")*/
   }
 
   ssc.start()
