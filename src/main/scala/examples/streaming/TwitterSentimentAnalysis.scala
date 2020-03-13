@@ -11,6 +11,8 @@ import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.streaming.twitter.TwitterUtils
 
+import scala.util.Try
+
 object TwitterSentimentAnalysis extends App {
 
   val rootLogger = Logger.getRootLogger()
@@ -21,7 +23,8 @@ object TwitterSentimentAnalysis extends App {
 
   val filters: Array[String] = Array.empty[String]
 
-  val twitterFile = args.headOption.getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
+  val twitterFile = Try(args(0)).getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
+  val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
   val twitterCredentials = new Properties()
   twitterCredentials.load(new FileInputStream(twitterFile))
@@ -56,7 +59,7 @@ object TwitterSentimentAnalysis extends App {
 
   val jdbcProperties = new Properties()
   jdbcProperties.setProperty("user","postgres")
-  val pgHashtags = sparkSession.read.jdbc("jdbc:postgresql://localhost:5432/postgres", "public.hashtags", jdbcProperties)
+  val pgHashtags = sparkSession.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
   val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
 
   rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
