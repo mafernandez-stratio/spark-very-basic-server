@@ -21,8 +21,10 @@ object TwitterSentimentAnalysis extends App {
 
   val filters: Array[String] = Array.empty[String]
 
+  val twitterFile = args.headOption.getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
+
   val twitterCredentials = new Properties()
-  twitterCredentials.load(new FileInputStream("/Users/miguelangelfernandezdiaz/workspace/twitter.properties"))
+  twitterCredentials.load(new FileInputStream(twitterFile))
 
   // Set the system properties so that Twitter4j library used by Twitter stream
   // can use them to generate OAuth credentials
