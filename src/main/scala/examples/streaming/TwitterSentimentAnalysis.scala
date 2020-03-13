@@ -53,24 +53,19 @@ object TwitterSentimentAnalysis extends App {
 
   rootLogger.error(" >>> New data window")
 
-  val tweets = stream.filter(_.getHashtagEntities.nonEmpty).map{ status =>
-    val source = status.getSource
-    (source.drop(source.indexOf(">")).stripPrefix(">").stripSuffix("</a>"), status.getHashtagEntities.map(_.getText.toLowerCase), status.getText)
-  }
-
   val jdbcProperties = new Properties()
   jdbcProperties.setProperty("user","postgres")
   val pgHashtags = sparkSession.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
   val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
-
   rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
 
-  val relevantTweets = tweets.filter{ tweet =>
-    rootLogger.error(s"tweet: $tweet")
-    rootLogger.error(s"Hashtags: ${tweet._2}")
-    rootLogger.error(s"Hashtags tweets: ${tweet._2.mkString(",")}")
-    tweet._2.intersect(keywords).length > 0
-  }.map(row => (row._1, row._2.mkString(" "), row._3))
+  val relevantTweets = stream.filter{ event =>
+    event.getHashtagEntities.nonEmpty && event.getHashtagEntities.intersect(keywords).length > 0
+  }.map{ status =>
+    val source = status.getSource
+    (source.drop(source.indexOf(">")).stripPrefix(">").stripSuffix("</a>"), status.getHashtagEntities.map(_.getText.toLowerCase).mkString(" "), status.getText)
+  }
+  relevantTweets.cache()
 
   val iphoneTweets = relevantTweets.filter(_._1.toLowerCase.contains("iphone"))
   iphoneTweets.foreachRDD{ rdd =>
