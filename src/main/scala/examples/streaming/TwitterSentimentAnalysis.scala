@@ -21,10 +21,12 @@ object TwitterSentimentAnalysis extends App {
 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
-  val filters: Array[String] = Array.empty[String]
-
   val twitterFile = Try(args(0)).getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
+  rootLogger.error(s"twitterFile=$twitterFile")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
+  rootLogger.error(s"pgURL=$pgURL")
+
+  val filters: Array[String] = Array.empty[String]
 
   val twitterCredentials = new Properties()
   twitterCredentials.load(new FileInputStream(twitterFile))
