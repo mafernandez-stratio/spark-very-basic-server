@@ -61,7 +61,7 @@ object TwitterSentimentAnalysis extends App {
   rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
 
   val relevantTweets = stream.filter{ event =>
-    event.getHashtagEntities.nonEmpty && event.getHashtagEntities.intersect(keywords).length > 0
+    event.getHashtagEntities.nonEmpty && event.getHashtagEntities.map(_.getText.toLowerCase).intersect(keywords).length > 0
   }.map{ status =>
     val source = status.getSource
     (source.drop(source.indexOf(">")).stripPrefix(">").stripSuffix("</a>"), status.getHashtagEntities.map(_.getText.toLowerCase).mkString(" "), status.getText)
