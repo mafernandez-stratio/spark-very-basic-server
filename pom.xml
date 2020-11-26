@@ -9,7 +9,9 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
-        <spark.version>2.4.0</spark.version>
+        <spark.version>2.4.7</spark.version>
+        <bahir.version>2.4.0</bahir.version>
+        <pg.version>42.2.8</pg.version>     
     </properties>
 
     <dependencies>
@@ -31,12 +33,12 @@
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>spark-streaming-twitter_2.11</artifactId>
-            <version>${spark.version}</version>
+            <version>${bahir.version}</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.8</version>
+            <version>${pg.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
