@@ -18,7 +18,7 @@ Very basic server using Apache Spark to count vowels
 
 - For jar execution
 
-> java -jar target/very-basic-server-0.1-SNAPSHOT-jar-with-dependencies.jar "9070 spark://localhost:7077"
+> java -jar target/very-basic-server-0.1-SNAPSHOT-jar-with-dependencies.jar "9070" "spark://localhost:7077"
 
 - From a terminal:
 
