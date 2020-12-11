@@ -52,46 +52,35 @@ object TwitterSentimentAnalysis extends App {
   val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(windowSecs))
   val stream = TwitterUtils.createStream(ssc, None, filters)
 
-  rootLogger.error(" >>> New data window")
-
-  val jdbcProperties = new Properties()
-  jdbcProperties.setProperty("user","postgres")
-  val pgHashtags = sparkSession.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
-  val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
-  rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
-
-  val relevantTweets = stream.filter{ event =>
-    event.getHashtagEntities.nonEmpty && event.getHashtagEntities.map(_.getText.toLowerCase).intersect(keywords).length > 0
-  }.map{ status =>
-    val source = status.getSource
-    (source.drop(source.indexOf(">")).stripPrefix(">").stripSuffix("</a>"), status.getHashtagEntities.map(_.getText.toLowerCase).mkString(" "), status.getText)
-  }
-  relevantTweets.cache()
-
-  val iphoneTweets = relevantTweets.filter(_._1.toLowerCase.contains("iphone"))
-  iphoneTweets.foreachRDD{ rdd =>
+  stream.foreachRDD{ rdd =>
     import sparkSession.implicits._
-    rootLogger.error(s" >>> Saving ${rdd.count()} tweets from iphone sources")
-    rdd.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/iphone")
 
-    /*val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/iphone")
-    rootLogger.error(s" >>> Total tweets from iphone sources: ${df.count()}")
-    rootLogger.error(s" >>> Tweets from iphones:${System.lineSeparator}${df.collect().map{ row =>
-      s"${row.getString(0)} | ${row.getString(1)} | ${row.getString(2)}"
-    }.mkString(System.lineSeparator())}")*/
-  }
+    rootLogger.error(" >>> New data window")
 
-  val otherSourcesTweets = relevantTweets.filter(!_._1.toLowerCase.contains("iphone"))
-  otherSourcesTweets.foreachRDD{ rdd =>
-    import sparkSession.implicits._
-    rootLogger.error(s" >>> Saving ${rdd.count()} tweets from other sources")
-    rdd.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/other")
+    val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
 
-    /*val df = sparkSession.read.parquet("hdfs://localhost:9000/tmp/streaming/other")
-    rootLogger.error(s" >>> Total tweets from other sources: ${df.count()}")
-    rootLogger.error(s" >>> Tweets from others:${System.lineSeparator}${df.collect().map{ row =>
-      s"${row.getString(0)} | ${row.getString(1)} | ${row.getString(2)}"
-    }.mkString(System.lineSeparator())}")*/
+    val jdbcProperties = new Properties()
+    jdbcProperties.setProperty("user","postgres")
+    val pgHashtags = spark.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
+    val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
+    rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
+
+    val relevantTweets = rdd.filter{ event =>
+      event.getHashtagEntities.nonEmpty && event.getHashtagEntities.map(_.getText.toLowerCase).intersect(keywords).length > 0
+    }.map{ status =>
+      val source = status.getSource
+      (source.drop(source.indexOf(">")).stripPrefix(">").stripSuffix("</a>"), status.getHashtagEntities.map(_.getText.toLowerCase).mkString(" "), status.getText)
+    }
+    relevantTweets.cache()
+
+    val iphoneTweets = relevantTweets.filter(_._1.toLowerCase.contains("iphone"))
+    rootLogger.error(s" >>> Saving ${iphoneTweets.count()} tweets from iphone sources")
+    iphoneTweets.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/iphone")
+
+    val otherSourcesTweets = relevantTweets.filter(!_._1.toLowerCase.contains("iphone"))
+    rootLogger.error(s" >>> Saving ${otherSourcesTweets.count()} tweets from other sources")
+    otherSourcesTweets.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/other")
+
   }
 
   ssc.start()
