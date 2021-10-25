@@ -17,11 +17,11 @@ object TwitterSentimentAnalysis extends App {
 
   val rootLogger = Logger.getRootLogger()
 
-  rootLogger.setLevel(Level.ERROR)
+  rootLogger.setLevel(Level.WARN)
 
-  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("org").setLevel(Level.WARN)
 
-  val twitterFile = Try(args(0)).getOrElse("/Users/miguelangelfernandezdiaz/workspace/twitter.properties")
+  val twitterFile = Try(args(0)).getOrElse("/home/mafernandez/workspace/twitter.properties")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
   val windowSecs: Int = Try(args(2).toInt).getOrElse(30)
 
@@ -44,18 +44,18 @@ object TwitterSentimentAnalysis extends App {
   val hadoopCfg = new Configuration()
   hadoopCfg.set("fs.defaultFS", "hdfs://localhost:9000")
   val fs = FileSystem.newInstance(hadoopCfg)
-  fs.delete(new Path("/tmp/streaming/"), true)
+  fs.delete(new Path("/tmp/sentiment_analysis/"), true)
 
-  rootLogger.error(" >>> Starting Streaming context")
-  rootLogger.error(s"twitterFile=$twitterFile")
-  rootLogger.error(s"pgURL=$pgURL")
+  rootLogger.warn(" >>> Starting Streaming context")
+  rootLogger.warn(s"twitterFile=$twitterFile")
+  rootLogger.warn(s"pgURL=$pgURL")
   val ssc = new StreamingContext(sparkSession.sparkContext, Seconds(windowSecs))
   val stream = TwitterUtils.createStream(ssc, None, filters)
 
   stream.foreachRDD{ rdd =>
     import sparkSession.implicits._
 
-    rootLogger.error(" >>> New data window")
+    rootLogger.warn(" >>> New data window")
 
     val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
 
@@ -63,7 +63,7 @@ object TwitterSentimentAnalysis extends App {
     jdbcProperties.setProperty("user","postgres")
     val pgHashtags = spark.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
     val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
-    rootLogger.error(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
+    rootLogger.warn(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
 
     val relevantTweets = rdd.filter{ event =>
       event.getHashtagEntities.nonEmpty && event.getHashtagEntities.map(_.getText.toLowerCase).intersect(keywords).length > 0
@@ -74,11 +74,11 @@ object TwitterSentimentAnalysis extends App {
     relevantTweets.cache()
 
     val iphoneTweets = relevantTweets.filter(_._1.toLowerCase.contains("iphone"))
-    rootLogger.error(s" >>> Saving ${iphoneTweets.count()} tweets from iphone sources")
+    rootLogger.warn(s" >>> Saving ${iphoneTweets.count()} tweets from iphone sources")
     iphoneTweets.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/iphone")
 
     val otherSourcesTweets = relevantTweets.filter(!_._1.toLowerCase.contains("iphone"))
-    rootLogger.error(s" >>> Saving ${otherSourcesTweets.count()} tweets from other sources")
+    rootLogger.warn(s" >>> Saving ${otherSourcesTweets.count()} tweets from other sources")
     otherSourcesTweets.toDF("source", "hashtags", "text").write.mode(SaveMode.Append).parquet("hdfs://localhost:9000/tmp/streaming/other")
 
   }
