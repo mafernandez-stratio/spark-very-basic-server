@@ -35,7 +35,7 @@ object VowelsCounter extends App {
           filter(Set('a', 'e', 'i', 'o', 'u').contains).
           map((_, 1)).
           reduceByKey(_ + _)
-          .map(e => s"${e._1} - ${e._2}").cache()
+          .map(e => s"key=${e._1}, count=${e._2}").cache()
 
         val result = resultRDD.collect().mkString("; ")
 
