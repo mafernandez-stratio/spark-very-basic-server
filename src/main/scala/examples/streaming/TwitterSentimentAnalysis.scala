@@ -19,7 +19,7 @@ object TwitterSentimentAnalysis extends App {
 
   rootLogger.setLevel(Level.WARN)
 
-  Logger.getLogger("org").setLevel(Level.WARN)
+  Logger.getLogger("org").setLevel(Level.ERROR)
 
   val twitterFile = Try(args(0)).getOrElse("/home/mafernandez/workspace/twitter.properties")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
@@ -60,7 +60,8 @@ object TwitterSentimentAnalysis extends App {
     val spark = SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
 
     val jdbcProperties = new Properties()
-    jdbcProperties.setProperty("user","postgres")
+    jdbcProperties.setProperty("user", "postgres")
+    jdbcProperties.setProperty("password", "postgres")
     val pgHashtags = spark.read.jdbc(pgURL, "public.hashtags", jdbcProperties)
     val keywords = pgHashtags.collect().map(_.getString(0).toLowerCase)
     rootLogger.warn(s" >>> Looking up tweets with keywords: ${keywords.mkString(",")}")
