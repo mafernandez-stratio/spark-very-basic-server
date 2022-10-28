@@ -9,7 +9,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <properties>
-        <spark.version>3.3.0</spark.version>
+        <spark.version>3.3.1</spark.version>
         <bahir.version>2.4.0</bahir.version>
         <pg.version>42.3.3</pg.version>
         <scala.binary.version>2.12</scala.binary.version>
