@@ -11,7 +11,7 @@
     <properties>
         <spark.version>3.3.1</spark.version>
         <bahir.version>2.4.0</bahir.version>
-        <pg.version>42.3.7</pg.version>
+        <pg.version>42.7.2</pg.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.version>${scala.binary.version}.15</scala.version>
     </properties>
