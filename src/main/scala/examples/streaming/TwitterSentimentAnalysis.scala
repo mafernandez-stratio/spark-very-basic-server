@@ -21,7 +21,7 @@ object TwitterSentimentAnalysis extends App {
 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
-  val twitterFile = Try(args(0)).getOrElse("/home/mafernandez/workspace/twitter.properties")
+  val twitterFile = Try(args(0)).getOrElse("/home/crossdata/Descargas/twitter.properties")
   val pgURL = Try(args(1)).getOrElse("jdbc:postgresql://localhost:5432/postgres")
   val windowSecs: Int = Try(args(2).toInt).getOrElse(30)
 
@@ -42,7 +42,7 @@ object TwitterSentimentAnalysis extends App {
   val sparkSession = SparkSession.builder().config(sparkConf).getOrCreate()
 
   val hadoopCfg = new Configuration()
-  hadoopCfg.set("fs.defaultFS", "hdfs://localhost:9000")
+  hadoopCfg.set("fs.defaultFS", "hdfs://localhost:8020")
   val fs = FileSystem.newInstance(hadoopCfg)
   fs.delete(new Path("/tmp/sentiment_analysis/"), true)
 
